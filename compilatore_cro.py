@@ -136,6 +136,7 @@ mul_expr:         unary_expr       (MULOP unary_expr)*       -> mul_expr
 
 unary_expr: "non" unary_expr -> not_expr
            | "-"  unary_expr -> neg_expr
+           | "&"  ID         -> addr_of
            | primary_expr
 
 primary_expr: INT_CONST     -> int_const
@@ -303,6 +304,12 @@ class BoolConstNode:   value: bool
 
 @dataclass
 class VarRefNode:
+    name: str
+
+@dataclass
+class AddrOfNode:
+    """Operatore & (indirizzo di variabile), usato tipicamente come
+    argomento di scanef, in analogia a scanf("%d", &x) del C."""
     name: str
 
 @dataclass
@@ -484,6 +491,7 @@ class CroTransformer(Transformer):
 
     def not_expr(self, items): return UnOpNode('!', items[0])
     def neg_expr(self, items): return UnOpNode('-', items[0])
+    def addr_of(self, items): return AddrOfNode(str(items[0]))
 
     def int_const(self, items):    return IntConstNode(int(str(items[0])))
     def float_const(self, items):  return FloatConstNode(float(str(items[0])))
@@ -693,6 +701,14 @@ class SemanticAnalyzer:
             self._err(f"Identificatore non dichiarato: '{node.name}'."); return None
         return entry.get('type')
 
+    def _v_AddrOfNode(self, node: AddrOfNode):
+        entry = self.current_table.lookup(node.name)
+        if entry is None:
+            self._err(f"Identificatore non dichiarato: '{node.name}'."); return None
+        if entry.get('const'):
+            self._err(f"Non si può prendere l'indirizzo di una costante: '{node.name}'.")
+        return entry.get('type')
+
     def _v_AssignNode(self, node: AssignNode):
         if not isinstance(node.target, VarRefNode):
             self._err("Sinistra dell'assegnazione deve essere una variabile."); return None
@@ -739,8 +755,18 @@ class SemanticAnalyzer:
         return t
 
     def _v_FunctionCallNode(self, node: FunctionCallNode):
-        if node.name in ('stambf','printf','scanef','scanf'):
+        if node.name in ('stambf','printf'):
             for a in node.args: self._visit(a)
+            return 'void'
+        if node.name in ('scanef','scanf'):
+            for i, a in enumerate(node.args):
+                self._visit(a)
+                # Il primo argomento è la stringa di formato; i successivi
+                # devono essere indirizzi (&variabile), come in scanf C.
+                if i > 0 and not isinstance(a, AddrOfNode):
+                    self._err(
+                        f"Argomento {i+1} di 'scanef' deve essere un indirizzo "
+                        f"(usa '&nomevariabile').")
             return 'void'
         entry = self.global_table.lookup(node.name)
         if entry is None or entry.get('kind') != 'function':
@@ -871,6 +897,7 @@ class CodeGenerator:
     def _v_CharConstNode(self, n):   return n.value
     def _v_BoolConstNode(self, n):   return 'true' if n.value else 'false'
     def _v_VarRefNode(self, n):      return n.name
+    def _v_AddrOfNode(self, n):      return f"&{n.name}"
 
     def _v_AssignNode(self, node: AssignNode) -> str:
         return f"{self._v(node.target)} = {self._v(node.value)}"
