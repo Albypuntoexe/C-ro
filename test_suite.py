@@ -355,9 +355,6 @@ class TestCostruttiBase(unittest.TestCase):
 # PARTE 2 — TEST DI INTEGRAZIONE END-TO-END (compila con gcc ed esegue)
 # =============================================================================
 
-PROGRAMMI_DIR = Path(__file__).parent / "programmi_test"
-
-
 def esegui_programma_cro(percorso_cro: Path, input_stdin: str,
                          timeout: int = 5) -> str:
     """

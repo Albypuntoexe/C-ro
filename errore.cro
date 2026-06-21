@@ -1,0 +1,59 @@
+/* ============================================================================
+ * errore.cro
+ * File di test NEGATIVO: contiene diversi errori semantici intenzionali,
+ * uno per ciascuna categoria controllata dall'analizzatore semantico di
+ * C-ro. Serve a verificare che il compilatore individui correttamente
+ * TUTTI gli errori in un'unica passata (non si ferma al primo errore
+ * trovato) e fornisce materiale di esempio per la discussione orale.
+ *
+ * Esegui con:
+ *   python compilatore_cro.py errore.cro
+ *
+ * Atteso: il compilatore NON produce alcun file .c, ma stampa la lista
+ * di tutti gli errori semantici rilevati (uno per riga).
+ * ============================================================================ */
+
+funzion nummero somma(nummero a, nummero b) {
+    torn a + b;
+}
+
+nummero capo() {
+
+    // ERRORE 1: identificatore non dichiarato.
+    stambf("%d\n", valore_fantasma);
+
+    // ERRORE 2: dichiarazione multipla dello stesso identificatore
+    // nello stesso scope.
+    nummero x = 1;
+    nummero x = 2;
+
+    // ERRORE 3: assegnazione a una costante.
+    const nummero MAX = 10;
+    MAX = 20;
+
+    // ERRORE 4: condizione di if non booleana (nummero invece di bull).
+    nummero y = 5;
+    if (y) {
+        stambf("y\n");
+    }
+
+    // ERRORE 5: tipi incompatibili in un'operazione aritmetica
+    // (nummero + bull non e' una combinazione valida).
+    bull flag = over;
+    nummero z = y + flag;
+
+    // ERRORE 6: chiamata a funzione con numero di argomenti errato.
+    nummero r1 = somma(1);
+
+    // ERRORE 7: chiamata a funzione mai dichiarata.
+    nummero r2 = funzione_inesistente(1, 2);
+
+    // ERRORE 8: scanef con argomento privo dell'operatore di indirizzo (&).
+    nummero letto;
+    scanef("%d", letto);
+
+    // ERRORE 9: operatore & applicato a una costante.
+    scanef("%d", &MAX);
+
+    torn 0;
+}
