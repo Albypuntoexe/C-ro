@@ -137,35 +137,35 @@ class TestCostruttiBase(unittest.TestCase):
 
     # ---- Strutture di controllo ----------------------------------------------
 
-    def test_if_else(self):
+    def test_si_sinvece(self):
         c = self._compila("""
             nummero capo() {
                 nummero x = 1;
-                if (x > 0) { stambf("pos"); } else { stambf("neg"); }
+                si (x > 0) { stambf("pos"); } s'invece { stambf("neg"); }
                 torn 0;
             }
         """)
         self.assertIn("if ((x > 0))", c)
         self.assertIn("} else {", c)
 
-    def test_if_elseif_else(self):
+    def test_si_elseif_sinvece(self):
         c = self._compila("""
             nummero capo() {
                 nummero x = 2;
-                if (x == 1) { stambf("uno"); }
-                S'invece (x == 2) { stambf("due"); }
-                else { stambf("altro"); }
+                si (x == 1) { stambf("uno"); }
+                else if (x == 2) { stambf("due"); }
+                s'invece { stambf("altro"); }
                 torn 0;
             }
         """)
         self.assertIn("else if ((x == 2))", c)
 
-    def test_errore_condizione_if_non_booleana(self):
+    def test_errore_condizione_si_non_booleana(self):
         with self.assertRaises(ValueError):
             self._compila("""
                 nummero capo() {
                     nummero x = 1;
-                    if (x) { stambf("a"); }
+                    si (x) { stambf("a"); }
                     torn 0;
                 }
             """)
@@ -318,7 +318,7 @@ class TestCostruttiBase(unittest.TestCase):
         c = self._compila("""
             nummero capo() {
                 nummero i = 0;
-                if (i == 0) {
+                si (i == 0) {
                     nummero j = 1;
                     stambf("%d", j);
                 }

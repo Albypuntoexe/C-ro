@@ -1,22 +1,21 @@
 /* ============================================================================
  * calcolatrice.cro
- * Programma di test obbligatorio (vedi "Modalita di Esame e Consegna del
- * Progetto Software", sezione 4): menu di scelta operazione aritmetica,
+ * Programma di test obbligatorio : menu di scelta operazione aritmetica,
  * input utente (interi e reali), calcolo del risultato tramite funzioni,
  * ciclo di continuazione/uscita.
  *
  * Costrutti del linguaggio C-ro esercitati in questo programma:
- *   - dichiarazioni di variabili (nummero, comm, bull) con/senza const
- *   - funzioni con parametri e valore di ritorno (somma, sottrazione,
- *     moltiplicazione, divisione, scelta_valida)
- *   - chiamate a funzione annidate
- *   - input/output (scanef, stambf) con operatore di indirizzo &
- *   - ciclo while (trament) per il loop principale
- *   - switch (facimm/cas/default) per la selezione dell'operazione
- *   - if/else per la gestione della divisione per zero e della
- *     validazione dell'input
- *   - operatori aritmetici, relazionali e logici (e, o, non)
- *   - costante (const)
+ * - dichiarazioni di variabili (nummero, comm, bull) con/senza const
+ * - funzioni con parametri e valore di ritorno (somma, sottrazione,
+ * moltiplicazione, divisione, scelta_valida)
+ * - chiamate a funzione annidate
+ * - input/output (scanef, stambf) con operatore di indirizzo &
+ * - ciclo while (trament) per il loop principale
+ * - switch (facimm/cas/default) per la selezione dell'operazione
+ * - si/s'invece per la gestione della divisione per zero e della
+ * validazione dell'input
+ * - operatori aritmetici, relazionali e logici (e, o, non)
+ * - costante (const)
  * ============================================================================ */
 
 // --- Funzioni aritmetiche di base, ciascuna su due operandi reali ----------
@@ -34,12 +33,12 @@ funzion comm moltiplicazione(comm a, comm b) {
 }
 
 // La divisione restituisce 0.0 e segnala l'errore con stambf in caso di
-// divisore nullo: dimostra l'uso di if/else dentro una funzione.
+// divisore nullo: dimostra l'uso di si/s'invece dentro una funzione.
 funzion comm divisione(comm a, comm b) {
     comm risultato = 0.0;
-    if (b == 0.0) {
+    si (b == 0.0) {
         stambf("  [Errore] Divisione per zero!\n");
-    } else {
+    } s'invece {
         risultato = a / b;
     }
     torn risultato;
@@ -56,17 +55,14 @@ funzion bull scelta_valida(nummero scelta) {
 nummero capo() {
     const nummero ESCI = 0;
     const nummero CONTINUA = 1;
-
     nummero scelta = 0;
     nummero continua = CONTINUA;
     comm x = 0.0;
     comm y = 0.0;
     comm risultato = 0.0;
-
     stambf("=========================================\n");
     stambf("       Calcolatrice in linguaggio C-ro\n");
     stambf("=========================================\n");
-
     trament (continua == CONTINUA) {
 
         stambf("\n--- Menu operazioni ---\n");
@@ -77,12 +73,9 @@ nummero capo() {
         stambf("Scegli operazione (1-4): ");
         scanef("%d", &scelta);
 
-        if (non scelta_valida(scelta)) {
-
+        si (non scelta_valida(scelta)) {
             stambf("Scelta non valida, riprova.\n");
-
-        } else {
-
+        } s'invece {
             stambf("Inserisci il primo numero: ");
             scanef("%f", &x);
             stambf("Inserisci il secondo numero: ");
@@ -103,7 +96,7 @@ nummero capo() {
                     spacc;
                 cas 4:
                     risultato = divisione(x, y);
-                    if (non (y == 0.0)) {
+                    si (non (y == 0.0)) {
                         stambf("Risultato: %f\n", risultato);
                     }
                     spacc;

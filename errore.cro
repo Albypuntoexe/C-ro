@@ -2,12 +2,14 @@
  * errore.cro
  * File di test NEGATIVO: contiene diversi errori semantici intenzionali,
  * uno per ciascuna categoria controllata dall'analizzatore semantico di
- * C-ro. Serve a verificare che il compilatore individui correttamente
+ * C-ro.
+ *
+ * Serve a verificare che il compilatore individui correttamente
  * TUTTI gli errori in un'unica passata (non si ferma al primo errore
- * trovato) e fornisce materiale di esempio per la discussione orale.
+ * trovato)
  *
  * Esegui con:
- *   python compilatore_cro.py errore.cro
+ * python compilatore_cro.py errore.cro
  *
  * Atteso: il compilatore NON produce alcun file .c, ma stampa la lista
  * di tutti gli errori semantici rilevati (uno per riga).
@@ -31,9 +33,9 @@ nummero capo() {
     const nummero MAX = 10;
     MAX = 20;
 
-    // ERRORE 4: condizione di if non booleana (nummero invece di bull).
+    // ERRORE 4: condizione di si non booleana (nummero invece di bull).
     nummero y = 5;
-    if (y) {
+    si (y) {
         stambf("y\n");
     }
 

@@ -92,9 +92,9 @@ statement: var_decl
          | block
 
 // ------------------------------------------------------- Strutture di controllo
-if_stmt: "if" "(" expr ")" statement elif_clause* else_clause?
-elif_clause: "S'invece" "(" expr ")" statement
-else_clause: "else" statement
+if_stmt: "si" "(" expr ")" statement elif_clause* else_clause?
+elif_clause: "else" "if" "(" expr ")" statement
+else_clause: "s'invece" statement
 
 switch_stmt:  "facimm" "(" expr ")" "{" case_stmt* default_stmt? "}"
 case_stmt:    "cas" expr ":"    statement*
@@ -128,11 +128,11 @@ assign_expr: logical_or_expr "=" assign_expr -> assign_expr
            | logical_or_expr                 -> passthrough
 
 logical_or_expr:  logical_and_expr ("o"   logical_and_expr)* -> or_expr
-logical_and_expr: equality_expr    ("e"   equality_expr)*    -> and_expr
-equality_expr:    relational_expr  (EQOP  relational_expr)*  -> eq_expr
-relational_expr:  add_expr         (RELOP add_expr)*         -> rel_expr
-add_expr:         mul_expr         (ADDOP mul_expr)*         -> add_expr
-mul_expr:         unary_expr       (MULOP unary_expr)*       -> mul_expr
+logical_and_expr: equality_expr    ("e"   equality_expr)* -> and_expr
+equality_expr:    relational_expr  (EQOP  relational_expr)* -> eq_expr
+relational_expr:  add_expr         (RELOP add_expr)* -> rel_expr
+add_expr:         mul_expr         (ADDOP mul_expr)* -> add_expr
+mul_expr:         unary_expr       (MULOP unary_expr)* -> mul_expr
 
 unary_expr: "non" unary_expr -> not_expr
            | "-"  unary_expr -> neg_expr
@@ -176,8 +176,7 @@ CHAR_CONST:   /\'([^\'\\]|\\.)\'/
 
 // ID esclude le parole chiave riservate (lookahead negativo) per evitare
 // ambiguità tra operatori testuali (e, o, non) / keyword e identificatori
-// (es. "non (x)" come operatore unario vs chiamata a funzione "non(x)").
-ID: /(?!(?:nummero|comm|carattere|bull|const|over|favz|if|else|facimm|cas|default|trament|ppe|faje|spacc|vaje|capo|funzion|torn|stambf|scanef|non|e|o)\b)[a-zA-Z_][a-zA-Z0-9_]*/
+ID: /(?!(?:nummero|comm|carattere|bull|const|over|favz|si|if|else|facimm|cas|default|trament|ppe|faje|spacc|vaje|capo|funzion|torn|stambf|scanef|non|e|o)\b)[a-zA-Z_][a-zA-Z0-9_]*/
 
 %ignore /\/\/[^\n]*/
 %ignore /\/\*(.|\n)*?\*\//
@@ -467,6 +466,7 @@ class CroTransformer(Transformer):
             result = BinOpNode(op, result, right)
         return result
 
+    """-> differenza con interleaved è proprio il maiuscolo"""
     def _interleaved(self, items):
         """Lista [E, Token(op), E, Token(op), E, ...]"""
         result = items[0]
@@ -631,12 +631,12 @@ class SemanticAnalyzer:
     def _v_IfNode(self, node: IfNode):
         ct = self._visit(node.condition)
         if ct and ct != 'bool':
-            self._err(f"Condizione 'if' non booleana (trovato '{ct}').")
+            self._err(f"Condizione 'si' non booleana (trovato '{ct}').")
         self._visit(node.then_branch)
         for cond, body in node.elif_clauses:
             ct2 = self._visit(cond)
             if ct2 and ct2 != 'bool':
-                self._err(f"Condizione 'S'invece' non booleana (trovato '{ct2}').")
+                self._err(f"Condizione 'else if' non booleana (trovato '{ct2}').")
             self._visit(body)
         if node.else_branch:
             self._visit(node.else_branch)
@@ -761,8 +761,6 @@ class SemanticAnalyzer:
         if node.name in ('scanef','scanf'):
             for i, a in enumerate(node.args):
                 self._visit(a)
-                # Il primo argomento è la stringa di formato; i successivi
-                # devono essere indirizzi (&variabile), come in scanf C.
                 if i > 0 and not isinstance(a, AddrOfNode):
                     self._err(
                         f"Argomento {i+1} di 'scanef' deve essere un indirizzo "
@@ -981,9 +979,9 @@ TESTS = {
     "if-else": (True, r"""
         nummero capo() {
             nummero x = 42;
-            if (x > 0) {
+            si (x > 0) {
                 stambf("pos\n");
-            } else {
+            } s'invece {
                 stambf("neg\n");
             }
             torn 0;
@@ -1035,7 +1033,7 @@ TESTS = {
     "tipo bool": (True, r"""
         nummero capo() {
             bull ok = over;
-            if (ok) {
+            si (ok) {
                 stambf("si\n");
             }
             torn 0;
